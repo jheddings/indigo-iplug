@@ -5,21 +5,21 @@ PLUGIN_NAME ?= iPlug
 
 PLUGIN_DIR ?= $(PLUGIN_NAME).indigoPlugin
 ZIPFILE ?= $(PLUGIN_NAME).zip
-PLUGIN_SRC ?= "$(PLUGIN_DIR)/Contents/Server Plugin/"
+PLUGIN_SRC ?= $(PLUGIN_DIR)/Contents/Server Plugin/
 
 # TODO come up with reasonable defaults for these
 DEPLOY_HOST ?= localhost
 DEPLOY_PATH ?= ./dist
 
-DELETE_FILE ?= rm -f
-DELETE_DIR ?= rm -Rf
+DELETE_FILE ?= rm -vf
+DELETE_DIR ?= rm -vRf
 
-RUN_PY = PYTHONPATH=$(PLUGIN_SRC) $(shell which python)
+RUN_PY ?= PYTHONPATH="$(PLUGIN_SRC)" $(shell which python)
 
 RSYNC ?= rsync -avzP
 
 ################################################################################
-.PHONY: all clean test dist deploy update_iplug
+.PHONY: all clean distclean test dist deploy update_iplug
 
 ################################################################################
 test: clean

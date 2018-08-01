@@ -9,40 +9,41 @@ PLUGIN_SRC ?= $(PLUGIN_DIR)/Contents/Server Plugin/
 
 # TODO come up with reasonable defaults for these
 DEPLOY_HOST ?= localhost
-DEPLOY_PATH ?= ./dist
+DEPLOY_PATH ?= dist
 
-DELETE_FILE ?= rm -vf
-DELETE_DIR ?= rm -vRf
+EXCLUDE_LIST ?= *.pyc *.swp
 
-RUN_PY ?= PYTHONPATH="$(PLUGIN_SRC)" $(shell which python)
+PY := PYTHONPATH="$(PLUGIN_SRC)" $(shell which python)
 
-RSYNC ?= rsync -avzP
+DELETE := rm -vf
+RMDIR := rm -vRf
 
 ################################################################################
 .PHONY: all clean distclean test dist deploy update_iplug
 
 ################################################################################
 test: clean
-	$(RUN_PY) -m unittest discover -v ./test/
+	$(PY) -m unittest discover -v ./test/
 
 ################################################################################
 dist: zipfile
 
 ################################################################################
 zipfile:
-	zip -9r "$(ZIPFILE)" "$(PLUGIN_DIR)" --exclude \*.swp --exclude \*.pyc
+	zip -9r "$(ZIPFILE)" "$(PLUGIN_DIR)" $(foreach patt,$(EXCLUDE_LIST),--exclude \$(patt))
 
 ################################################################################
 clean:
-	find . -name '*.pyc' -exec $(DELETE_FILE) {} \;
+	find . -name '*.pyc' -exec $(DELETE) {} \;
 
 ################################################################################
 distclean: clean
-	$(DELETE_FILE) "$(ZIPFILE)"
+	$(DELETE) "$(ZIPFILE)"
+	find . -name '*.swp' -exec $(DELETE) {} \;
 
 ################################################################################
 deploy:
-	$(RSYNC) "$(PLUGIN_DIR)" "$(DEPLOY_HOST):$(DEPLOY_PATH)"
+	rsync -avzP $(foreach patt,$(EXCLUDE_LIST),--exclude '$(patt)') "$(PLUGIN_DIR)" "$(DEPLOY_HOST):$(DEPLOY_PATH)"
 
 ################################################################################
 update_iplug:

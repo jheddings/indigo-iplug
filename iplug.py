@@ -59,7 +59,7 @@ class ThreadedPlugin(indigo.PluginBase):
     #---------------------------------------------------------------------------
     # perform the work in the thread loop for the plugin
     # subclasses should invoke the base runLoopStep if overidden
-    def runLoopStep(self): pass
+    def runLoopStep(self): raise NotImplementedError
 
     #---------------------------------------------------------------------------
     def runConcurrentThread(self):

@@ -3,9 +3,13 @@
 # XXX set by parent Makefile
 PLUGIN_NAME ?= iPlug
 
-PLUGIN_DIR ?= $(PLUGIN_NAME).indigoPlugin
-ZIPFILE ?= $(PLUGIN_NAME).zip
-PLUGIN_SRC ?= $(PLUGIN_DIR)/Contents/Server Plugin/
+BASEDIR := .
+
+PLUGIN_DIR ?= $(BASEDIR)/$(PLUGIN_NAME).indigoPlugin
+ZIPFILE ?= $(BASEDIR)/$(PLUGIN_NAME).zip
+PLUGIN_SRC ?= $(PLUGIN_DIR)/Contents/Server Plugin
+
+IPLUG_SRC ?= ../iplug
 
 # TODO come up with reasonable defaults for these
 DEPLOY_HOST ?= localhost
@@ -17,6 +21,8 @@ PY := PYTHONPATH="$(PLUGIN_SRC)" $(shell which python)
 
 DELETE := rm -vf
 RMDIR := rm -vRf
+
+COPY := cp -fv
 
 ################################################################################
 .PHONY: all clean distclean test dist deploy update_iplug
@@ -47,7 +53,8 @@ deploy:
 
 ################################################################################
 update_iplug:
-	# TODO
+	# TODO only copy if the file already exists; e.g. don't deploy a new iplug here
+	$(COPY) "$(IPLUG_SRC)/iplug.py" "$(PLUGIN_SRC)/iplug.py"
 
 ################################################################################
 all: clean test dist

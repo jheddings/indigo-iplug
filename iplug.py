@@ -84,7 +84,9 @@ class ThreadedPlugin(indigo.PluginBase):
         self.loadPluginPrefs(prefs)
 
     #---------------------------------------------------------------------------
-    # perform the main work in the thread loop for the plugin
+    # perform the main work in the thread loop for the plugin. the timing of
+    # this method is not guaranteed, however it is guaranteed to run once per
+    # loop iteration.  it must be overidden by sublcasses.
     def runLoopStep(self): raise NotImplementedError
 
     #---------------------------------------------------------------------------
@@ -107,6 +109,7 @@ class ThreadedPlugin(indigo.PluginBase):
     def runConcurrentThread(self):
         self.logger.debug(u'Thread Started')
 
+        # allow plugins to do work before the thread starts
         self.preThreadLoopHook()
 
         try:
@@ -115,18 +118,19 @@ class ThreadedPlugin(indigo.PluginBase):
                 # perform the main work of the thread
                 self.runLoopStep()
 
-                # HOOK - plugin work before the delay starts
+                # do plugin work before the loop delay
                 self.preLoopDelayHook()
 
                 # sleep for the configured timeout
                 self.sleep(self.threadLoopDelay)
 
-                # HOOK - plugin work after the thread sleep
+                # do plugin work after the loop delay
                 self.postLoopDelayHook()
 
         except self.StopThread:
             pass
 
+        # allow plugins to do work when the thread stops
         self.postThreadLoopHook()
 
         self.logger.debug(u'Thread Stopped')

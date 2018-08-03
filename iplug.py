@@ -19,16 +19,18 @@ class ThreadedPlugin(indigo.PluginBase):
     threadLoopDelay = None
 
     #---------------------------------------------------------------------------
-    # subclasses should invoke the base __init__ if overidden
+    # NOTE: subclasses should invoke the base __init__ if overidden
     def __init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs):
         indigo.PluginBase.__init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs)
         self.loadPluginPrefs(pluginPrefs)
 
     #---------------------------------------------------------------------------
+    # NOTE: subclasses should invoke the base deviceStartComm if overidden
     def deviceStartComm(self, device):
         self.logger.debug(u'Starting device - %s [%s]', device.name, device.deviceTypeId)
 
     #---------------------------------------------------------------------------
+    # NOTE: subclasses should invoke the base deviceStopComm if overidden
     def deviceStopComm(self, device):
         self.logger.debug(u'Stopping device: %s', device.name)
 
@@ -65,7 +67,7 @@ class ThreadedPlugin(indigo.PluginBase):
         return value
 
     #---------------------------------------------------------------------------
-    # subclasses should invoke the base loadPluginPrefs if overidden
+    # NOTE: subclasses should invoke the base loadPluginPrefs if overidden
     def loadPluginPrefs(self, prefs):
         # setup logging system
         self.logLevel = self.getPrefAsInt(prefs, 'logLevel', 20)
@@ -82,24 +84,50 @@ class ThreadedPlugin(indigo.PluginBase):
         self.loadPluginPrefs(prefs)
 
     #---------------------------------------------------------------------------
-    # perform the work in the thread loop for the plugin
-    # subclasses should invoke the base runLoopStep if overidden
+    # perform the main work in the thread loop for the plugin
     def runLoopStep(self): raise NotImplementedError
+
+    #---------------------------------------------------------------------------
+    # HOOK - something to do just before the gthread loop starts
+    def preThreadLoopHook(self): pass
+
+    #---------------------------------------------------------------------------
+    # HOOK - something to do just after the thread loop stops
+    def postThreadLoopHook(self): pass
+
+    #---------------------------------------------------------------------------
+    # HOOK - perform work in the plugin thread before the loop delay
+    def preLoopDelayHook(self): pass
+
+    #---------------------------------------------------------------------------
+    # HOOK - perform work in the plugin thread after the loop delay
+    def postLoopDelayHook(self): pass
 
     #---------------------------------------------------------------------------
     def runConcurrentThread(self):
         self.logger.debug(u'Thread Started')
 
+        self.preThreadLoopHook()
+
         try:
 
             while not self.stopThread:
+                # perform the main work of the thread
                 self.runLoopStep()
+
+                # HOOK - plugin work before the delay starts
+                self.preLoopDelayHook()
 
                 # sleep for the configured timeout
                 self.sleep(self.threadLoopDelay)
 
+                # HOOK - plugin work after the thread sleep
+                self.postLoopDelayHook()
+
         except self.StopThread:
             pass
+
+        self.postThreadLoopHook()
 
         self.logger.debug(u'Thread Stopped')
 

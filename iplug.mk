@@ -9,6 +9,7 @@ PLUGIN_DIR ?= $(BASEDIR)/$(PLUGIN_NAME).indigoPlugin
 ZIPFILE ?= $(BASEDIR)/$(PLUGIN_NAME).zip
 PLUGIN_SRC ?= $(PLUGIN_DIR)/Contents/Server Plugin
 
+# XXX is there a better way to reference this path?
 IPLUG_SRC ?= ../iplug
 
 # TODO come up with reasonable defaults for these

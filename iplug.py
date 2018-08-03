@@ -33,16 +33,34 @@ class ThreadedPlugin(indigo.PluginBase):
         self.logger.debug(u'Stopping device: %s', device.name)
 
     #---------------------------------------------------------------------------
+    # return the value from the dict as a string, optionally providing a default value
+    def getPref(self, prefs, name, dfault=None):
+        value = prefs.get(name, None)
+
+        if value is None:
+            value = dfault
+
+        self.logger.debug(u'prefs{%s} = %s', name, str(value))
+
+        return value
+
+    #---------------------------------------------------------------------------
     # return the value from the dict as an integer, optionally providing a default value
     def getPrefAsInt(self, prefs, name, dfault=None):
-        givenValue = prefs.get(name, None)
+        value = self.getPref(prefs, name, dfault)
 
-        value = dfault
+        if value is not None:
+            value = int(value)
 
-        if givenValue is not None:
-            value = int(givenValue)
+        return value
 
-        self.logger.debug(u'{%s} - %s', name, str(value))
+    #---------------------------------------------------------------------------
+    # return the value from the dict as a float, optionally providing a default value
+    def getPrefAsFloat(self, prefs, name, dfault=None):
+        value = self.getPref(prefs, name, dfault)
+
+        if value is not None:
+            value = float(value)
 
         return value
 

@@ -9,9 +9,6 @@ PLUGIN_DIR ?= $(BASEDIR)/$(PLUGIN_NAME).indigoPlugin
 ZIPFILE ?= $(BASEDIR)/$(PLUGIN_NAME).zip
 PLUGIN_SRC ?= $(PLUGIN_DIR)/Contents/Server Plugin
 
-IPLUG_REPO ?= https://github.com/jheddings/indigo-iplug
-IPLUG_SRC_URL ?= https://raw.githubusercontent.com/jheddings/indigo-iplug/master
-
 INDIGO_SUPPORT_DIR ?= /Library/Application Support/Perceptive Automation/Indigo 7
 
 # a bit of trickery to perform substitution on paths
@@ -29,13 +26,12 @@ PY := PYTHONPATH="$(PLUGIN_SRC)" $(shell which python)
 DELETE := rm -vf
 RMDIR := rm -vRf
 COPY := cp -fv
-CURL := curl --silent
 SYNC := rsync -avzP $(foreach patt,$(EXCLUDE_LIST),--exclude '$(patt)')
 
 zip_exclude = $(foreach patt,$(EXCLUDE_LIST),--exclude \$(patt))
 
 ################################################################################
-.PHONY: all clean distclean test dist deploy upgrade_iplug
+.PHONY: all clean distclean test dist deploy
 
 ################################################################################
 test: clean
@@ -60,11 +56,6 @@ distclean: clean
 ################################################################################
 deploy:
 	$(SYNC) "$(PLUGIN_DIR)" "$(DEPLOY_HOST):$(DEPLOY_PATH)"
-
-################################################################################
-upgrade_iplug:
-	$(CURL) --output "$(BASEDIR)/iplug.mk" "$(IPLUG_SRC_URL)/iplug.mk"
-	$(CURL) --output "$(PLUGIN_SRC)/iplug.py" "$(IPLUG_SRC_URL)/iplug.py"
 
 ################################################################################
 all: clean test dist

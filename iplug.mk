@@ -3,8 +3,8 @@
 # XXX set by parent Makefile
 PLUGIN_NAME ?= iPlug
 
-BASEDIR := .
-SRCDIR := $(BASEDIR)/src
+BASEDIR ?= .
+SRCDIR ?= $(BASEDIR)/src
 
 ZIPFILE ?= $(BASEDIR)/$(PLUGIN_NAME).zip
 PLUGIN_DIR ?= $(BASEDIR)/$(PLUGIN_NAME).indigoPlugin
@@ -37,14 +37,13 @@ zip_exclude = $(foreach patt,$(EXCLUDE_LIST),--exclude \$(patt))
 
 ################################################################################
 build:
-	$(MKDIR) "$(PLUGIN_DIR)/Contents"
-	$(COPY) Info.plist "$(PLUGIN_DIR)/Contents"
 	$(MKDIR) "$(PLUGIN_SRC)"
-	$(COPY) src/* "$(PLUGIN_SRC)"
-	$(COPY) iplug/*.py "$(PLUGIN_SRC)"
+	$(COPY) $(BASEDIR)/Info.plist "$(PLUGIN_DIR)/Contents"
+	$(COPY) $(BASEDIR)/iplug/*.py "$(PLUGIN_SRC)"
+	$(COPY) $(SRCDIR)/* "$(PLUGIN_SRC)"
 
 ################################################################################
-test: clean build
+test: build
 	$(PY) -m unittest discover -v ./test/
 
 ################################################################################

@@ -24,8 +24,8 @@ DELETE := rm -vf
 RMDIR := rm -vRf
 MKDIR := mkdir -vp
 COPY := cp -afv
-COMPRESS := zip -9r
-SYNC := rsync -avzP $(foreach patt,$(EXCLUDE_LIST),--exclude '$(patt)')
+ZIP := zip -9r
+RSYNC := rsync -avzP $(foreach patt,$(EXCLUDE_LIST),--exclude '$(patt)')
 
 # a bit of trickery to perform substitution on paths
 empty :=
@@ -40,7 +40,7 @@ build:
 	$(COPY) $(BASEDIR)/icon.png "$(PLUGIN_DIR)"
 	$(COPY) $(BASEDIR)/Info.plist "$(PLUGIN_DIR)/Contents"
 	$(COPY) $(SRCDIR)/* "$(PLUGIN_SRC)"
-	$(COPY) $(BASEDIR)/iplug/*.py "$(PLUGIN_SRC)"
+	$(COPY) $(BASEDIR)/iplug/iplug.py "$(PLUGIN_SRC)"
 
 ################################################################################
 test: build
@@ -52,7 +52,7 @@ dist: zipfile
 ################################################################################
 zipfile: build
 	$(eval exclude_args := $(foreach patt,$(EXCLUDE_LIST),--exclude \$(patt)))
-	$(COMPRESS) "$(ZIPFILE)" "$(PLUGIN_DIR)" $(exclude_args)
+	$(ZIP) "$(ZIPFILE)" "$(PLUGIN_DIR)" $(exclude_args)
 
 ################################################################################
 clean:
@@ -67,7 +67,7 @@ distclean: clean
 ################################################################################
 deploy: build
 	$(eval dest_path := $(subst $(space),\$(space),$(DEPLOY_PATH)))
-	$(SYNC) "$(PLUGIN_DIR)" "$(DEPLOY_HOST):$(dest_path)"
+	$(RSYNC) "$(PLUGIN_DIR)" "$(DEPLOY_HOST):$(dest_path)"
 
 ################################################################################
 rebuild: clean build

@@ -1,6 +1,6 @@
 # common makefile for iplug plugins
 
-# XXX set by parent Makefile
+# XXX should set by parent Makefile - we should probably error if this is not set
 PLUGIN_NAME ?= iPlug
 
 BASEDIR ?= .
@@ -12,25 +12,24 @@ PLUGIN_SRC ?= $(PLUGIN_DIR)/Contents/Server Plugin
 
 INDIGO_SUPPORT_DIR ?= /Library/Application Support/Perceptive Automation/Indigo 7
 
-# a bit of trickery to perform substitution on paths
-empty :=
-space := $(empty) $(empty)
-
 # rsync paths require a bit of extra escaping for some reason...
 DEPLOY_HOST ?= localhost
-DEPLOY_PATH ?= $(subst $(space),\$(space),$(INDIGO_SUPPORT_DIR))/Plugins
+DEPLOY_PATH ?= $(INDIGO_SUPPORT_DIR)/Plugins
 
 EXCLUDE_LIST ?= *.pyc *.swp
 
+# commands used in the makefile
 PY := PYTHONPATH="$(PLUGIN_SRC)" $(shell which python)
-
 DELETE := rm -vf
 RMDIR := rm -vRf
 MKDIR := mkdir -vp
-COPY := cp -fv
+COPY := cp -afv
+COMPRESS := zip -9r
 SYNC := rsync -avzP $(foreach patt,$(EXCLUDE_LIST),--exclude '$(patt)')
 
-zip_exclude = $(foreach patt,$(EXCLUDE_LIST),--exclude \$(patt))
+# a bit of trickery to perform substitution on paths
+empty :=
+space := $(empty) $(empty)
 
 ################################################################################
 .PHONY: all build rebuild clean distclean test dist deploy
@@ -38,9 +37,10 @@ zip_exclude = $(foreach patt,$(EXCLUDE_LIST),--exclude \$(patt))
 ################################################################################
 build:
 	$(MKDIR) "$(PLUGIN_SRC)"
+	$(COPY) $(BASEDIR)/icon.png "$(PLUGIN_DIR)"
 	$(COPY) $(BASEDIR)/Info.plist "$(PLUGIN_DIR)/Contents"
-	$(COPY) $(BASEDIR)/iplug/*.py "$(PLUGIN_SRC)"
 	$(COPY) $(SRCDIR)/* "$(PLUGIN_SRC)"
+	$(COPY) $(BASEDIR)/iplug/*.py "$(PLUGIN_SRC)"
 
 ################################################################################
 test: build
@@ -51,7 +51,8 @@ dist: zipfile
 
 ################################################################################
 zipfile: build
-	zip -9r "$(ZIPFILE)" "$(PLUGIN_DIR)" $(zip_exclude)
+	$(eval exclude_args := $(foreach patt,$(EXCLUDE_LIST),--exclude \$(patt)))
+	$(COMPRESS) "$(ZIPFILE)" "$(PLUGIN_DIR)" $(exclude_args)
 
 ################################################################################
 clean:
@@ -65,11 +66,12 @@ distclean: clean
 
 ################################################################################
 deploy: build
-	$(SYNC) "$(PLUGIN_DIR)" "$(DEPLOY_HOST):$(DEPLOY_PATH)"
+	$(eval dest_path := $(subst $(space),\$(space),$(DEPLOY_PATH)))
+	$(SYNC) "$(PLUGIN_DIR)" "$(DEPLOY_HOST):$(dest_path)"
 
 ################################################################################
 rebuild: clean build
 
 ################################################################################
-all: build test
+all: build test dist
 

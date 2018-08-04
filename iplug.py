@@ -177,6 +177,11 @@ def validateConfig_Hostname(key, values, errors, emptyOk=False):
     return True
 
 ################################################################################
+def validateConfig_Path(key, values, errors, emptyOk=False):
+    # TODO verify correct file path format
+    return validateConfig_String(key, values, errors, emptyOk)
+
+################################################################################
 def validateConfig_String(key, values, errors, emptyOk=False):
     value = values.get(key, None)
 

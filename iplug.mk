@@ -16,12 +16,6 @@ PLUGIN_BASEDIR ?= $(BASEDIR)/$(PLUGIN_NAME).indigoPlugin
 PLUGIN_CONTENT ?= $(PLUGIN_BASEDIR)/Contents
 PLUGIN_SRC ?= $(PLUGIN_CONTENT)/Server Plugin
 
-# these files will be copied into place for the plugin; they should be referenced
-# according to their paths in the final plugin structure - the most common use is
-# to provide an icon for the bundle
-# source content is expected in an 'etc' directory under BASEDIR
-PLUGIN_ETC_FILES += $(PLUGIN_CONTENT)/Info.plist
-
 # path where Indigo keeps application data
 INDIGO_SUPPORT_DIR ?= /Library/Application Support/Perceptive Automation/Indigo 7
 
@@ -34,10 +28,10 @@ EXCLUDE_LIST ?= *.pyc *.swp
 
 # commands used in the makefile
 PY := PYTHONPATH="$(PLUGIN_SRC)" $(shell which python)
-DELETE := rm -f
-RMDIR := rm -Rf
-MKDIR := mkdir -p
-COPY := cp -af
+DELETE := rm -vf
+RMDIR := rm -Rvf
+MKDIR := mkdir -vp
+COPY := cp -avf
 ZIP := zip -9r
 RSYNC := rsync -avzP $(foreach patt,$(EXCLUDE_LIST),--exclude '$(patt)')
 
@@ -52,15 +46,12 @@ dest_files = $(patsubst $(SRCDIR)/%,$(PLUGIN_SRC)/%,$(src_files))
 .PHONY: all build rebuild clean distclean test dist deploy
 
 ################################################################################
-build: $(PLUGIN_ETC_FILES)
+build:
+	$(MKDIR) "$(PLUGIN_CONTENT)"
+	$(COPY) $(BASEDIR)/etc/Info.plist "$(PLUGIN_CONTENT)"
 	$(MKDIR) "$(PLUGIN_SRC)"
 	$(COPY) $(SRCDIR)/* "$(PLUGIN_SRC)"
 	$(COPY) $(IPLUG_BASEDIR)/iplug.py "$(PLUGIN_SRC)/iplug.py"
-
-################################################################################
-$(PLUGIN_BASEDIR)/% $(PLUGIN_CONTENT)/%: $(BASEDIR)/etc/%
-	$(MKDIR) "$(dir $@)"
-	$(COPY) "$<" "$@"
 
 ################################################################################
 test: build

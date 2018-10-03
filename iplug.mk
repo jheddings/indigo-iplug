@@ -48,7 +48,7 @@ dest_files = $(patsubst $(SRCDIR)/%,$(PLUGIN_SRC)/%,$(src_files))
 
 ################################################################################
 get_commit_id = $(shell git -C $(BASEDIR) ls-files -s $(1) | cut -f2 -d\ )
-get_commit_status = $(shell git -C $(BASEDIR) status --short $(1))
+get_commit_status = $(strip $(shell git -C $(BASEDIR) status --short $(1)))
 
 ################################################################################
 build: is_not_iplug_repo
@@ -116,8 +116,8 @@ update_iplug: is_not_iplug_repo
 upgrade_iplug: is_not_iplug_repo update_iplug
 	$(eval iplug_stat = $(call get_commit_status, $(IPLUG_BASEDIR)))
 	$(eval iplug_ver = $(call get_commit_id, $(IPLUG_BASEDIR)))
-ifneq ($(iplug_stat), )
-	git -C $(BASEDIR) add $(IPLUG_BASEDIR)
-	git -C $(BASEDIR) commit -m 'Updated iPlug to $(iplug_ver)' $(IPLUG_BASEDIR)
-endif
+	if [ -n "$(iplug_stat)" ] ; then \
+		git -C $(BASEDIR) add $(IPLUG_BASEDIR) ; \
+		git -C $(BASEDIR) commit -m 'Updated iPlug to $(iplug_ver)' $(IPLUG_BASEDIR) ; \
+	fi
 

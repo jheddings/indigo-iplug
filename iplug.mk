@@ -46,6 +46,9 @@ dest_files = $(patsubst $(SRCDIR)/%,$(PLUGIN_SRC)/%,$(src_files))
 .PHONY: all build rebuild clean distclean test dist deploy update_iplug
 
 ################################################################################
+get_commit_id = $(shell git -C $(BASEDIR) ls-files -s $(1) | cut -f2 -d\ )
+
+################################################################################
 build:
 	$(MKDIR) "$(PLUGIN_BASEDIR)"
 	$(MKDIR) "$(PLUGIN_CONTENT)"
@@ -83,9 +86,14 @@ deploy: build
 
 ################################################################################
 update_iplug:
+	$(eval iplug_ver_pre = $(call get_commit_id, $(IPLUG_BASEDIR)))
 	git -C $(IPLUG_BASEDIR) pull
+	$(eval iplug_ver_post = $(call get_commit_id, $(IPLUG_BASEDIR)))
+
+ifneq ($(iplug_ver_pre), $(iplug_ver_post))
 	git -C $(BASEDIR) add $(IPLUG_BASEDIR)
-	git -C $(BASEDIR) commit -m 'Updated iPlug' $(IPLUG_BASEDIR)
+	git -C $(BASEDIR) commit -m 'Updated iPlug to $(iplug_ver_post)' $(IPLUG_BASEDIR)
+endif
 
 ################################################################################
 rebuild: clean build

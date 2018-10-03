@@ -43,7 +43,7 @@ src_files = $(wildcard $(SRCDIR)/*)
 dest_files = $(patsubst $(SRCDIR)/%,$(PLUGIN_SRC)/%,$(src_files))
 
 ################################################################################
-.PHONY: all build rebuild clean distclean test dist deploy
+.PHONY: all build rebuild clean distclean test dist deploy update_iplug
 
 ################################################################################
 build:
@@ -80,6 +80,12 @@ distclean: clean
 deploy: build
 	$(eval dest_path := $(subst $(space),\$(space),$(DEPLOY_PATH)))
 	$(RSYNC) "$(PLUGIN_BASEDIR)" "$(DEPLOY_HOST):$(dest_path)"
+
+################################################################################
+update_iplug:
+	git -C $(IPLUG_BASEDIR) pull
+	git -C $(BASEDIR) add $(IPLUG_BASEDIR)
+	git -C $(BASEDIR) commit -m 'Updated iPlug' $(IPLUG_BASEDIR)
 
 ################################################################################
 rebuild: clean build

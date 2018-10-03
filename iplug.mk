@@ -47,6 +47,7 @@ dest_files = $(patsubst $(SRCDIR)/%,$(PLUGIN_SRC)/%,$(src_files))
 
 ################################################################################
 build:
+	$(MKDIR) "$(PLUGIN_BASEDIR)"
 	$(MKDIR) "$(PLUGIN_CONTENT)"
 	$(COPY) $(BASEDIR)/etc/Info.plist "$(PLUGIN_CONTENT)"
 	$(MKDIR) "$(PLUGIN_SRC)"

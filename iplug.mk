@@ -116,7 +116,7 @@ update_iplug: is_not_iplug_repo
 upgrade_iplug: is_not_iplug_repo update_iplug
 	$(eval iplug_stat = $(call get_commit_status, $(IPLUG_BASEDIR)))
 	$(eval iplug_ver = $(call get_commit_id, $(IPLUG_BASEDIR)))
-ifneq ("$(iplug_stat)", "")
+ifneq ($(iplug_stat), "")
 	git -C $(BASEDIR) add $(IPLUG_BASEDIR)
 	git -C $(BASEDIR) commit -m 'Updated iPlug to $(iplug_ver)' $(IPLUG_BASEDIR)
 endif

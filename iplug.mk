@@ -43,13 +43,15 @@ src_files = $(wildcard $(SRCDIR)/*)
 dest_files = $(patsubst $(SRCDIR)/%,$(PLUGIN_SRC)/%,$(src_files))
 
 ################################################################################
-.PHONY: all build rebuild clean distclean test dist deploy update_iplug
+.PHONY: all build rebuild clean distclean test dist deploy \
+	upgrade_iplug update_iplug test_iplug is_iplug_repo is_not_iplug_repo
 
 ################################################################################
 get_commit_id = $(shell git -C $(BASEDIR) ls-files -s $(1) | cut -f2 -d\ )
+get_commit_status = $(shell git -C $(BASEDIR) status --short $(1))
 
 ################################################################################
-build:
+build: is_not_iplug_repo
 	$(MKDIR) "$(PLUGIN_BASEDIR)"
 	$(MKDIR) "$(PLUGIN_CONTENT)"
 	$(COPY) $(BASEDIR)/etc/Info.plist "$(PLUGIN_CONTENT)"
@@ -58,46 +60,64 @@ build:
 	$(COPY) $(IPLUG_BASEDIR)/iplug.py "$(PLUGIN_SRC)/iplug.py"
 
 ################################################################################
-test: build
+test: is_not_iplug_repo build
 	$(PY) -m unittest discover -v ./test/
 
 ################################################################################
-dist: zipfile
+dist: is_not_iplug_repo zipfile
 
 ################################################################################
-zipfile: build
+zipfile: is_not_iplug_repo build
 	$(eval exclude_args := $(foreach patt,$(EXCLUDE_LIST),--exclude \$(patt)))
 	$(ZIP) "$(ZIPFILE)" "$(PLUGIN_BASEDIR)" $(exclude_args)
 
 ################################################################################
-clean:
+clean: is_not_iplug_repo
 	$(RMDIR) "$(PLUGIN_BASEDIR)"
 	find . -name '*.pyc' -exec $(DELETE) {} \;
 
 ################################################################################
-distclean: clean
+distclean: is_not_iplug_repo clean
 	$(DELETE) "$(ZIPFILE)"
 	find . -name '*.swp' -exec $(DELETE) {} \;
 
 ################################################################################
-deploy: build
+deploy: is_not_iplug_repo build
 	$(eval dest_path := $(subst $(space),\$(space),$(DEPLOY_PATH)))
 	$(RSYNC) "$(PLUGIN_BASEDIR)" "$(DEPLOY_HOST):$(dest_path)"
 
 ################################################################################
-update_iplug:
-	$(eval iplug_ver_pre = $(call get_commit_id, $(IPLUG_BASEDIR)))
-	git -C $(IPLUG_BASEDIR) pull
-	$(eval iplug_ver_post = $(call get_commit_id, $(IPLUG_BASEDIR)))
+rebuild: is_not_iplug_repo clean build
 
-ifneq ($(iplug_ver_pre), $(iplug_ver_post))
-	git -C $(BASEDIR) add $(IPLUG_BASEDIR)
-	git -C $(BASEDIR) commit -m 'Updated iPlug to $(iplug_ver_post)' $(IPLUG_BASEDIR)
+################################################################################
+all: is_not_iplug_repo build test dist
+
+################################################################################
+is_iplug_repo:
+ifneq ($(PLUGIN_NAME), iPlug)
+	$(error Must be executed in the iPlug repository)
 endif
 
 ################################################################################
-rebuild: clean build
+is_not_iplug_repo:
+ifeq ($(PLUGIN_NAME), iPlug)
+	$(error Cannot be executed in the iPlug repository)
+endif
 
 ################################################################################
-all: build test dist
+test_iplug: is_iplug_repo
+	#TODO
+
+################################################################################
+update_iplug: is_not_iplug_repo
+	git -C $(IPLUG_BASEDIR) pull
+
+################################################################################
+upgrade_iplug: is_not_iplug_repo update_iplug
+	$(eval iplug_stat = $(call get_commit_status, $(IPLUG_BASEDIR)))
+	$(eval iplug_ver = $(call get_commit_id, $(IPLUG_BASEDIR)))
+ifneq ("$(iplug_stat)", "")
+	git -C $(BASEDIR) add $(IPLUG_BASEDIR)
+	git -C $(BASEDIR) commit -m 'Updated iPlug to $(iplug_ver)' $(IPLUG_BASEDIR)
+endif
 

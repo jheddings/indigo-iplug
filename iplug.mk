@@ -17,7 +17,7 @@ PLUGIN_CONTENT ?= $(PLUGIN_BASEDIR)/Contents
 PLUGIN_SRC ?= $(PLUGIN_CONTENT)/Server Plugin
 
 # path where Indigo keeps application data
-INDIGO_SUPPORT_DIR ?= /Library/Application Support/Perceptive Automation/Indigo 7
+INDIGO_SUPPORT_DIR ?= /Library/Application Support/Perceptive Automation/Indigo 7.2
 
 # where to deploy the plugin
 DEPLOY_HOST ?= localhost
@@ -105,6 +105,7 @@ ifeq ($(PLUGIN_NAME), iPlug)
 endif
 
 ################################################################################
+# XXX can `make test` just do the right thing here?
 test_iplug: is_iplug_repo
 	#TODO
 

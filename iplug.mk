@@ -111,6 +111,7 @@ test_iplug: is_iplug_repo
 
 ################################################################################
 update_iplug: is_not_iplug_repo
+	git -C $(IPLUG_BASEDIR) checkout master
 	git -C $(IPLUG_BASEDIR) pull
 
 ################################################################################

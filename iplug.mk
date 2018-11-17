@@ -27,7 +27,7 @@ DEPLOY_PATH ?= $(INDIGO_SUPPORT_DIR)/Plugins
 EXCLUDE_LIST ?= *.pyc *.swp
 
 # commands used in the makefile
-PY := PYTHONPATH="$(PLUGIN_SRC)" $(shell which python)
+PY := PYTHONPATH="$(PLUGIN_SRC):$(BASEDIR)/test" $(shell which python)
 DELETE := rm -vf
 RMDIR := rm -Rvf
 MKDIR := mkdir -vp
@@ -35,7 +35,8 @@ COPY := cp -avf
 ZIP := zip -9r
 RSYNC := rsync -avzP $(foreach patt,$(EXCLUDE_LIST),--exclude '$(patt)')
 
-# a bit of trickery to perform substitution on paths
+# a bit of trickery when performing substitution
+comma := ,
 empty :=
 space := $(empty) $(empty)
 
@@ -61,7 +62,11 @@ build: is_not_iplug_repo
 
 ################################################################################
 test: is_not_iplug_repo build
-	$(PY) -m unittest discover -v ./test/
+ifdef TESTMOD
+	$(PY) -m unittest -v $(foreach mod,$(subst $(comma),$(space),$(TESTMOD)),test_$(mod))
+else
+	$(PY) -m unittest discover -v -s ./test
+endif
 
 ################################################################################
 dist: is_not_iplug_repo zipfile

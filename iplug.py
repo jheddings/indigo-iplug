@@ -98,7 +98,7 @@ class ThreadedPlugin(PluginBase):
     def runLoopStep(self): raise NotImplementedError
 
     #---------------------------------------------------------------------------
-    # HOOK - something to do just before the gthread loop starts
+    # HOOK - something to do just before the thread loop starts
     def preThreadLoopHook(self): pass
 
     #---------------------------------------------------------------------------

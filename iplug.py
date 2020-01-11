@@ -21,6 +21,8 @@ class PluginBase(indigo.PluginBase):
         indigo.PluginBase.__init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs)
         self.loadPluginPrefs(pluginPrefs)
 
+        self.logger = logging.getLogger('Plugin.iplug')
+
     #---------------------------------------------------------------------------
     # NOTE: subclasses should invoke the base deviceStartComm if overidden
     def deviceStartComm(self, device):

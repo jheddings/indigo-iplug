@@ -50,7 +50,7 @@ get_commit_status = $(strip $(shell git -C $(BASEDIR) status --short $(1)))
 ################################################################################
 .PHONY: build
 
-build: is_not_iplug_repo test
+build: is_not_iplug_repo
 	$(MKDIR) "$(PLUGIN_BASEDIR)"
 	$(MKDIR) "$(PLUGIN_CONTENT)"
 	$(COPY) $(BASEDIR)/etc/Info.plist "$(PLUGIN_CONTENT)"
@@ -71,12 +71,12 @@ endif
 ################################################################################
 .PHONY: dist
 
-dist: is_not_iplug_repo zipfile
+dist: is_not_iplug_repo test zipfile
 
 ################################################################################
 .PHONY: zipfile
 
-zipfile: is_not_iplug_repo build
+zipfile: is_not_iplug_repo build test
 	$(eval exclude_args := $(foreach patt,$(EXCLUDE_LIST),--exclude \$(patt)))
 	$(ZIP) "$(ZIPFILE)" "$(PLUGIN_BASEDIR)" $(exclude_args)
 
@@ -97,7 +97,7 @@ clobber: is_not_iplug_repo clean
 ################################################################################
 .PHONY: deploy
 
-deploy: is_not_iplug_repo build
+deploy: is_not_iplug_repo build test
 	$(eval dest_path := $(subst $(space),\$(space),$(DEPLOY_PATH)))
 	$(RSYNC) "$(PLUGIN_BASEDIR)" "$(DEPLOY_HOST):$(dest_path)"
 

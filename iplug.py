@@ -15,6 +15,9 @@ re_macaddr = re.compile('^([0-9a-fA-F][0-9a-fA-F][:\-]){5}([0-9a-fA-F][0-9a-fA-F
 ################################################################################
 class PluginBase(indigo.PluginBase):
 
+    # map devices we observe for changes to function handlers
+    _deviceWatchList = list()
+
     #---------------------------------------------------------------------------
     # NOTE: subclasses should invoke the base __init__ if overidden
     def __init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs):
@@ -22,6 +25,8 @@ class PluginBase(indigo.PluginBase):
         self.loadPluginPrefs(pluginPrefs)
 
         self.logger = logging.getLogger('Plugin.iplug')
+
+        indigo.devices.subscribeToChanges()
 
     #---------------------------------------------------------------------------
     # NOTE: subclasses should invoke the base deviceStartComm if overidden
@@ -32,6 +37,42 @@ class PluginBase(indigo.PluginBase):
     # NOTE: subclasses should invoke the base deviceStopComm if overidden
     def deviceStopComm(self, device):
         self.logger.debug(u'Stopping device: %s', device.name)
+
+    #---------------------------------------------------------------------------
+    # NOTE: subclasses should invoke the base deviceUpdate if overidden
+    def deviceUpdated(self, oldDevice, newDevice):
+        indigo.PluginBase.deviceUpdated(self, oldDevice, newDevice)
+
+        # since this method recieves all device changes, even debugging is too verbose...
+        #self.logger.debug(u'device change: %s -- %s', oldDevice.name, newDevice.name)
+
+        # notify any watchers for the device ID
+        for watcher in self._deviceWatchList:
+            watchId = watcher['deviceId']
+
+            if newDevice.id == watchId:
+                callback = watcher['callback']
+
+                if callback is not None:
+                    callback(self, newDevice)
+
+    #---------------------------------------------------------------------------
+    # set a callback for a given device ID => func(plugin, device)
+    def watchDeviceForChanges(self, deviceId, func):
+        self.logger.debug(u'adding watcher for device: %d', deviceId)
+
+        # this works well for monitoring all changes to a given device...  it
+        # would be more useful to create specific events for various changes
+        # e.g. deviceStateChange -- may require an event framework for Device objects
+
+        # TODO provide a method for watchers to unregister for changes
+
+        watcher = {
+            'deviceId' : deviceId,
+            'callback' : func
+        }
+
+        self._deviceWatchList.append(watcher)
 
     #---------------------------------------------------------------------------
     # return the value from the dict as a string, optionally providing a default value

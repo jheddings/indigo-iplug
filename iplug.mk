@@ -57,6 +57,9 @@ build: is_not_iplug_repo
 	$(MKDIR) "$(PLUGIN_SRC)"
 	$(COPY) $(SRCDIR)/* "$(PLUGIN_SRC)"
 	$(COPY) $(IPLUG_BASEDIR)/iplug.py "$(PLUGIN_SRC)/iplug.py"
+ifdef EXT_MODULES
+	for mod in $(EXT_MODULES) ; do $(COPY) "$$mod" "$(PLUGIN_SRC)" ; done
+endif
 
 ################################################################################
 .PHONY: test

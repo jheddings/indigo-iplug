@@ -120,6 +120,11 @@ class PluginBase(indigo.PluginBase):
 
         self.loadPluginPrefs(prefs)
 
+    #---------------------------------------------------------------------------
+    # standard callback for forcing UI reloads on dynamic menus...
+    def updateConfigUI(self, valuesDict=None, typeId=None, targetId=0):
+        self.logger.debug('refreshing form content: %d', targetId)
+
 ################################################################################
 class ThreadedPlugin(PluginBase):
 

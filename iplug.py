@@ -106,6 +106,7 @@ class PluginBase(indigo.PluginBase):
 
         return value
 
+
     #---------------------------------------------------------------------------
     # NOTE: subclasses should invoke the base loadPluginPrefs if overidden
     def loadPluginPrefs(self, prefs):
@@ -267,4 +268,30 @@ def validateConfig_Int(key, values, errors, min=None, max=None):
         return False
 
     return True
+
+################################################################################
+def valueIsTrue(value):
+    if value is True: return True
+    if value is None: return False
+
+    if type(value) not in (str, unicode):
+        return False
+
+    if value.lower() in ('true', 'yes', 'on', 'active'):
+        return True
+
+    return False
+
+################################################################################
+def valueIsFalse(value):
+    if value is False: return True
+    if value is None: return False
+
+    if type(value) not in (str, unicode):
+        return False
+
+    if value.lower() in ('false', 'no', 'off', 'inactive'):
+        return True
+
+    return False
 
